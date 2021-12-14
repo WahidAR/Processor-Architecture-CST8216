@@ -1,0 +1,56 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; FX.asm
+                        ;
+                        ; Author:               Wahid Abdul Rahim
+                        ; Course:               CST 8216
+                        ; Student Number:       040 985 017
+                        ; Date:                 Nov 17 2021
+                        ;
+                        ; Purpose:      To illustrate how to solve an equation such as:
+                        ;               f(x) = 5x + 3 for x = 0 to 9, using 8-bit Multiplication
+                        ;               The calculated x in f(x) values will be placed into the X_Values array
+                        ;               The calculated f(x) values will be placed into the Results array
+                        ;
+2000                    STACK           equ     $2000
+000a                    ARRAY_LEN       equ     10      ; Number of values to calculate (10): x = 0 to 9
+0003                    THREE           equ     3       ; Holds the value of the number 3
+0005                    FIVE            equ     5       ; Holds the Valeu of the number 5
+                        
+1020                            org     $1020           ; org as per assignment instructions
+1020                    X_Values
+1020                            ds      ARRAY_LEN       ; defines bytes starting at ehe memery location $1020
+102a                    End_X_Values                    ; hold the memory location of the end X_Values + 1
+                        
+1030                            org     $1030           ; org as per assignment instructions
+1030                    Results
+1030                            ds      ARRAY_LEN       ; Defines bytes to hold f(x)
+103a                    End_Results                     ; holds the memory location of the end Results + 1
+                        
+                        ; Expected Results
+                        ;
+                        ;                       $1020   $1021   $1022   $1023   $1024   $1025   $1026   $1027   $1028   $1029
+                        ;                       0       1       2       3       4       5       6       7       8       9
+                        ;                       $1030   $1031   $1032   $1033   $1034   $1035   $1036   $1037   $1038   $1039
+                        ;                       3       8       d       12      17      1c      21      26      2b      30
+                        
+2000                            org     $2000           ; Start of RAM
+2000 ce 10 20                   ldx     #X_Values       ; Loading X with the Aderess of X_Values
+                                ;ldy     #Results        ; Loading Y with the Aderess of Results
+2003 86 00                      ldaa    #0              ; Starting A at 0
+2005 6a 00              Loop    staa    0,x             ; Adding A to where x is pointing
+2007 c6 05                      ldab    #FIVE
+2009 12                         mul                     ; Muliplying A by 3 and storing the result in D NOTE: its small enough that a = 0, b = result
+200a cb 03                      addb    #THREE          ; Adding 3 to B
+200c a6 30                      ldaa    1,x+            ; Loading X into A then incrementing X
+200e 6b 0f                      stab    15,x            ; Storing B into Y and incrementing Y by 1
+2010 42                         inca                    ; Incrementing A to use for next Loop Iteration.
+2011 8e 10 2a                   cpx     #End_X_Values   ; Comparing X to End_X_Values
+2014 18 26 ff ed                lbne    Loop            ; Looping again if they're not equal. Ends the program otherwise.
+2018 3f                         swi                     ; forces program to quit executing in memory
+                                end
+
+Executed: Wed Dec 15 16:33:12 2021
+Total cycles: 37, Total bytes: 25
+Total errors: 0, Total warnings: 0

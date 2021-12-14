@@ -1,0 +1,95 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; GradesII.asm
+                        ;
+                        ; Author:               Wahid Abdul Rahim
+                        ; Course:               CST8216
+                        ; Student Number:       040 985 017
+                        ; Date:                 Nov 17 2021
+                        ;
+                        ; Purpose:              To Tally up the number of As, Bs, Cs, Ds and Fs
+                        ;                       from a Grades Array as per 21F Flowchart for GradesII
+                        ;                       which uses a Nested-IF structure
+                        ;
+                        ; Expected Result
+                        ;                       F       D       C       B       A
+                        ;                       $1020   $1021   $1022   $1023   $1024
+                        ;                       4       1       3       4       4
+                        
+                        ; Constants
+2000                    STACK   equ     $2000   ; initiating the stack pointer.
+0041                    A_Grade equ     'A'     ; The ASCII value of A
+0042                    B_Grade equ     'B'     ; The ASCII value of B
+0043                    C_Grade equ     'C'     ; The ASCII value of C
+0044                    D_Grade equ     'D'     ; The ASCII value of D
+0046                    F_Grade equ     'F'     ; The ASCII value of F
+                        
+1000                            org     $1000   ; as per assignment instructions
+1000                    Grade                   ; Loads Grades with the code from the supplied files
+                        #include Grades.txt     ; Grades file supplied for assignment
+1000 41 46 43 44 46     	db	'A, 'F, 'C, 'D, 'F
+1005 41 42 46 41 41     	db	'A, 'B, 'F, 'A, 'A
+100a 42 43 42           	db	'B, 'C, 'B
+100d 43 42 46           	db	'C, 'B, 'F
+                        
+                        
+                        
+                        #endinclude
+
+1010                    End_Grades              ; pointer to 1+ the last entery of the Grades array
+                        
+1020                            org     $1020   ; the starting location to store subsuqent grade counters
+1020 00                 Num_Fs  db      0       ; a variable to hold the number of F grades.
+1021 00                 Num_Ds  db      0       ; a variable to hold the number of D grades.
+1022 00                 Num_Cs  db      0       ; a variable to hold the number of C grades.
+1023 00                 Num_Bs  db      0       ; a variable to hold the number of B grades.
+1024 00                 Num_As  db      0       ; a variable to hold the number of A grades.
+                        
+2000                            org     $2000   ; Starting the logic portion of the code at $2000
+2000 cf 20 00                   lds     #STACK  ; Loading the Stack
+2003 86 00                      ldaa    #00     ; initalizing Num_Fs - Num_As to 0
+2005 7a 10 20                   staa    Num_Fs
+2008 7a 10 21                   staa    Num_Ds
+200b 7a 10 22                   staa    Num_Cs
+200e 7a 10 23                   staa    Num_Bs
+2011 7a 10 24                   staa    Num_As
+2014 ce 10 00                   ldx     #Grade  ; Loading register X with the memory aderess of Grade
+2017 a6 30              B       ldaa    1,x+    ; Loading Acumulator A with X and then incrementing X
+2019 81 46                      cmpa    #F_Grade; Compares the grade in Acumulator A with the ASCII value of 'F'
+201b 27 0e                      beq     Inc_F   ; if they're equal, branches to Inc_F
+201d 81 44                      cmpa    #D_Grade; Compares the grade in Acumulator A with the ASCII value of 'D'
+201f 27 13                      beq     Inc_D   ; if they're equal, branches to Inc_D
+2021 81 43                      cmpa    #C_Grade; Compares the grade in Acumulator A with the ASCII value of 'C'
+2023 27 18                      beq     Inc_C   ; if they're equal, branches to Inc_C
+2025 81 42                      cmpa    #B_Grade; Compares the grade in Acumulator A with the ASCII value of 'B'
+2027 27 1d                      beq     Inc_B   ; if they're equal, branches to Inc_B
+2029 20 24                      bra     Inc_A   ; brances to Inc_A
+202b b6 10 20           Inc_F   ldaa    Num_Fs  ; Loads Acumulator A Num_Fs
+202e 42                         inca            ; Adds 1 to Acumulator A
+202f 7a 10 20                   staa    Num_Fs  ; Stores the new value of Acumulator A back into Num_Fs
+2032 20 24                      bra     A       ; Branches to the instructions labled as A
+2034 b6 10 21           Inc_D   ldaa    Num_Ds  ; Loads Acumulator A Num_Ds
+2037 42                         inca            ; Adds 1 to Acumulator A
+2038 7a 10 21                   staa    Num_Ds  ; Stores the new value of Acumulator A back into Num_Ds
+203b 20 1b                      bra     A       ; Branches to the instructions labled as A
+203d b6 10 22           Inc_C   ldaa    Num_Cs  ; Loads Acumulator A Num_Cs
+2040 42                         inca            ; Adds 1 to Acumulator A
+2041 7a 10 22                   staa    Num_Cs  ; Stores the new value of Acumulator A back into Num_Cs
+2044 20 12                      bra     A       ; Branches to the instructions labled as A
+2046 b6 10 23           Inc_B   ldaa    Num_Bs  ; Loads Acumulator A Num_Bs
+2049 42                         inca            ; Adds 1 to Acumulator A
+204a 7a 10 23                   staa    Num_Bs  ; Stores the new value of Acumulator A back into Num_Bs
+204d 20 09                      bra     A       ; Branches to the instructions labled as A
+204f b6 10 24           Inc_A   ldaa    Num_As  ; Loads Acumulator A Num_As
+2052 42                         inca            ; Adds 1 to Acumulator A
+2053 7a 10 24                   staa    Num_As  ; Stores the new value of Acumulator A back into Num_As
+2056 20 00                      bra     A       ; Branches to the instructions labled as A
+2058 8e 10 10           A       cpx     #End_Grades     ;Compares x with the memory adreress of #End_Grades
+205b 18 26 ff b8                lbne    B       ; Aslong as X does not equal the memeory aderess of #End_Grades
+205f 3f                         swi             ; forces program to quit executing in memory
+                                end             ; Ends the program.
+
+Executed: Wed Dec 15 16:34:17 2021
+Total cycles: 127, Total bytes: 117
+Total errors: 0, Total warnings: 0

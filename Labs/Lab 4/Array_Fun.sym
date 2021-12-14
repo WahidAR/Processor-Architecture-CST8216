@@ -1,0 +1,22 @@
+array      1000
+cmpmin     2022
+config_hex_displays 2117
+delay_ms   211f
+digit0_pp3 0007
+digit1_pp2 000b
+display    2065
+divisor    0002
+dvalue     00fa
+endarray   1030
+hex_display 2139
+imax       2040
+max        1030
+midrange   1051
+min        1031
+next       202c
+next2      204a
+nummax     1040
+nummin     1041
+range      1050
+start      2011
+start2     202f

@@ -1,0 +1,162 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; Counter_HEX_Display.asm
+                        ;
+                        ; Author:               D. Haley, Professor, for CST8216
+                        ; Modified by:          <Shahram Ahmad  &&  Wahid Abdul Rahim>
+                        ; Student Number(s):    <  040971488    &&      040985017    >
+                        ; Lab Section(s):       <    301        &&         302       >
+                        ; Course:               CST8216 Fall 2021
+                        ; Date:                 <November 26th, 2021>
+                        
+                        ; Description   This counter counts from START_COUNT to END_COUNT as defined
+                        ;               in the program's equ statements
+                        
+                        ;               Behaviour:
+                        ;               This counter continually counts until Stop is pressed
+                        ;                on the simulator, as follows:
+                        ;
+                        ;               do
+                        ;                  count in HEX mode
+                        ;                  count in BCD mode
+                        ;               while (Stop not pressed on the simulator)
+                        ;
+                        ;               The speed of the counter is adjusted by changing DVALUE,
+                        ;               which changes the delay of displaying values in
+                        ;               the Delay Subroutine Value
+                        ;
+                        ; Other info:   The counter will use the Hex Displays to display the count.
+                        ;
+                        ;               The count must be in a single register, Accumulator A.
+                        ;
+                        ;               The range of the count can be altered by stopping the program,
+                        ;               changing the START_COUNT and END_COUNT values, re-assembling
+                        ;               and loading/running the program in the Simulator again.
+                        ;
+                        ;               START_COUNT must be >=0 and END_COUNT must be <= 99
+                        
+                        ; ***** DO NOT CHANGE ANY CODE BETWEEN THESE MARKERS *****
+                        ; Library Routines used in this software - you must load API.s19 into the
+                        ; Simulator to use the following subroutines as detailed in the API Booklet
+                        ;
+2117                    Config_Hex_Displays         equ        $2117
+211f                    Delay_Ms                    equ        $211F
+2139                    Hex_Display                 equ        $2139
+2144                    Extract_Msb                 equ        $2144
+2149                    Extract_Lsb                 equ        $2149
+                        
+                        ; Program Constants
+2000                    STACK           equ     $2000
+                        
+                                                        ; Port P (PPT) Display Selection Values
+000b                    DIGIT1_PP2      equ     %1011   ; 2nd from Right-most display MSB
+0007                    DIGIT0_PP3      equ     %0111   ; Right-most display LSB
+                        
+1000                                    org     $1000
+1000 01                 Count_Mode      db      1       ; if Count_Mode = $00
+                        ;                                     count in HEX
+                        ;                                 if Count_Mode = $FF
+                        ;                                     count in BCD
+                        ;                                 endif
+                        ;
+                        ; ***** END OF DO NOT CHANGE ANY CODE BETWEEN THESE MARKERS *****
+                        
+                        ; Delay Subroutine Value
+00fa                    DVALUE  equ     #250            ; Delay value (base 10) 0 - 255 ms
+                                                        ; 125 = 1/8 second <- good for Dragon12 Board
+                        
+                        ; Changing these values will change the Starting and Ending count
+0000                    START_COUNT      equ     $00     ; Starting count
+0015                    END_COUNT        equ     $15     ; Ending count
+                        
+2000                            org     $2000           ; program code
+2000 cf 20 00           Start   lds     #STACK          ; stack location
+                        
+2003 16 21 17                   jsr     Config_HEX_Displays ; Use the Hex Displays to display the count
+                        ; Continually Count. Start as HEX counter, then switch to BCD, then HEX ...
+2006 c6 00                      ldab    #00
+2008 cd 10 00           B       ldy     #Count_Mode
+200b 6b 40                      stab    0,y
+200d 86 00                      ldaa    #START_COUNT
+200f 36                 A       psha                       ; push (a) on the stack
+2010 16 21 44                   jsr     Extract_Msb        ; This will return the upper nibble of a value(MSB). i.e 35 = returns (3) as the upper nibble from an 8-bit Accumulator.
+2013 c6 0b                      ldab    #DIGIT1_PP2        ; loading (a) with the 2nd far right Port P.
+2015 16 21 39                   jsr     HEX_Display        ; displaying the hex value.
+2018 86 fa                      ldaa    #DVALUE            ; this will load (a) with 250 ms waiting time.
+201a 16 21 1f                   jsr     Delay_Ms           ; jump to subroutine Delay_Ms.
+201d 32                         pula
+201e 36                         psha
+201f 16 21 49                   jsr     Extract_Lsb        ; This will print the lower nibble of a value(LSB). i.e 35 = returns (5) as the lower nibble from an 8-bit Accumulator.
+2022 c6 07                      ldab    #DIGIT0_PP3        ; loading (a) with the far right Port P.
+2024 16 21 39                   jsr     HEX_Display        ; displaying the hex value.
+2027 86 fa                      ldaa    #DVALUE            ; this will load (a) with 250 ms waiting time.
+2029 16 21 1f                   jsr     Delay_Ms           ; jump to subroutine Delay_Ms.
+202c 32                         pula
+202d f6 10 00                   ldab     Count_Mode        ; loading accumulator (b) with contents of variable Count_Mode.
+2030 8b 01                      adda     #01               ; adding into accumulator (a) the value $01.
+2032 c1 00                      cmpb     #00               ; comparing whats in accumulator (b) with value $00.
+2034 26 02                      bne      BCD               ; if the mode is BCD, adjust the result to BCD.
+2036 20 02                      bra      next              ; then, branch to next label.
+2038 18 07              BCD     daa                        ; adjusting A for BCD
+203a 81 15              next    cmpa     #END_COUNT        ; if a is less/equal to 15 displays A to the HEX display otherwise, change the mode.
+203c 23 d1                      bls      A                 ; displays the contents of acumulater a to the hex display.
+203e c1 00                      cmpb     #00               ; if the current mode is HEX($00), change the mode to BCD($FF)
+2040 26 04                      bne      TO_HEX            ; if the counting mode is not hex($00), change the mode to hex.
+2042 c6 ff                      ldab     #$FF              ; loading accumulator (b) with value $FF, since if Count_Mode = $FF, then it counts in BCD.
+2044 20 c2                      bra      B
+2046 c6 00              TO_HEX  ldab     #00               ; loading accumulator (b) with value $00, since if Count_Mode = $00, then it counts in HEX.
+2048 20 be                      bra      B
+                        
+                                end ; your solution should fit between Assembler Lines 74 and 101. +/- 5 lines of code.
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+
+Executed: Wed Dec 15 16:35:26 2021
+Total cycles: 102, Total bytes: 75
+Total errors: 0, Total warnings: 0

@@ -1,0 +1,18 @@
+a          200f
+b          2008
+bcd        2038
+config_hex_displays 2117
+count_mode 1000
+delay_ms   211f
+digit0_pp3 0007
+digit1_pp2 000b
+dvalue     00fa
+end_count  0015
+extract_lsb 2149
+extract_msb 2144
+hex_display 2139
+next       203a
+stack      2000
+start      2000
+start_count 0000
+to_hex     2046
