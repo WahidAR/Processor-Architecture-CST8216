@@ -1,0 +1,121 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; Exam.asm
+                        ; COMPLETED
+                        ; Name:                 < Wahid Abdul Rahim >
+                        ; Student Number:       < 040 985 017 >
+                        ;
+                        ; NOTE:                 No credit will be given if the above information is missing
+                        ;
+                        ; Final Exam Quiz instructions and this starter code
+                        ; provides instructions on what this program must do
+                        
+                        ; Program Constants
+                        
+0020                    OFFSET          equ     $20             ; <== Calculate Constant Offset Addressing Mode
+                                                                ;     offset value from the Array to Index_Number_Array
+                                                                ;     using the appropriate adddresses.
+                                                                ;      You may HARD CODE this value.
+                        
+0012                    DIVISOR         equ     18                ; <== Determine the divisor used with the
+                                                                ;     idiv instruction from Final Exam Quiz instructions
+0010                    ARRAY_LEN       equ     End_Array-Array ; dynamic array size calculation
+0000                    Index           equ     $00             ; Starting Array index
+00cc                    ORIG_ZERO       equ     $CC             ; if original Array value = 0, store this value
+00ff                    NON_ZERO        equ     $FF             ; if idiv results not equal to zero, store this value
+                        
+                        
+1000                            org     $1000
+1000 00 12 23 37 48 00  Array   db      0,18,35,55,72,0,0,126,144,0,0,198,215,235,252,0  ; cut and paste the array provided to you
+     00 7e 90 00 00 c6
+     d7 eb fc 00
+                                                                ; in the Final Exam Quiz instructions here
+1010                    End_Array
+                        
+1020                            org    $1020                    ; <== Final Exam Quiz instructions contains
+                                                                ;     this value. Use this address to
+                                                                ;     calculate your offset for
+                                                                ;     CONSTANT OFFSET ADDRESSING mode
+1020                    Index_Number_Array
+1020                                    ds      End_Array-Array
+1030                    End_Index_Number_Array
+1030 00                 count   db      0
+                        
+2000                                    org     $2000
+2000 cf 20 00                           lds     #$2000
+                        ; your code goes here
+2003 96 00                              ldaa    $00
+2005 5a 00                              staa    Index
+2007 7a 10 30                           staa    count
+200a cd 10 00                           ldy     #Array
+200d 8d 10 10           Loop            cpy     #End_Array
+2010 27 30                              beq     End
+2012 e6 40                              ldab    0,y
+2014 d1 00                              cmpb    $00
+2016 27 11                              beq     Zero
+2018 ce 00 12                           ldx     #DIVISOR
+201b 18 10                              idiv
+201d d1 00                              cmpb    $00
+201f 26 0f                              bne     BAD_R
+2021 f6 10 30                           ldab    count
+2024 6b e8 20                           stab    OFFSET,y
+2027 20 0e                              bra     Inc
+2029 c6 cc              Zero            ldab    #ORIG_ZERO
+202b 6b e8 20                           stab    $20,y
+202e 20 07                              bra     Inc
+2030 c6 ff              Bad_r           ldab    #NON_ZERO
+2032 6b e8 20                           stab    OFFSET,y
+2035 20 00                              bra     Inc
+2037 c6 00              Inc             ldab    #Index
+2039 52                                 incb
+203a 72 10 30                           inc     count
+203d 5b 00                              stab    Index
+203f 02                                 iny
+2040 20 cb                              bra     Loop
+2042 3f                 End             swi
+                                        end
+                        
+                        ;============================================================
+                        ;       org     $1000
+                        ;Array db  0    14      0       28      34      35      70
+                        ;
+                        ;Index_Number_Array contents (example storage origin)
+                        ;
+                        ;       $1010   $1011   $1012   $1013   $1014   $1015   $1016
+                        ;       $CC     $01     $CC     $03     $FF     $05     $06
+                        ;
+                        ; $CC is stored when value read from Array equals $00
+                        ; $FF is stored when the value read from the Array is not $00,
+                        ;     has been divided by DIVISOR, but the Remainder indicates that
+                        ;      this value is not evenly divisible by DIVISOR,
+                        ;      which is 7 in this example
+                        
+                        ; $nn ? an integer number representing index of the Array where
+                        ;      the value read from the Array is not $00, has been
+                        ;      divided by DIVISOR, and the Remainder indicates that
+                        ;      this value is evenly divisible by DIVISOR,
+                        ;      which is 7 in this example
+                        
+                            ;START
+                            ;Initialize Constants and Variables (see 21F_Final_Exam.asm)
+                            ;Set index = 0
+                            ;Point to start of Array
+                            ;
+                            ;A Get the value at Array [index]
+                            ;IF (value is not equal to 0)
+                            ;            Divide value by 18
+                            ;            IF (remainder is equal to 0)
+                            ;                  Store the index of the Array at Array [index + OFFSET]
+                            ;            ELSE
+                            ;                  Store NON_ZERO value at Array [index + OFFSET]
+                            ;ELSE Store ORIG_ZERO at Array [index + OFFSET]
+                            ;      Increment pointer to Array
+                            ;      Increment index
+                            ;      IF index less than ARRAY_LEN branch back to A
+                            ;            ELSE end program
+                            ;END
+
+Executed: Wed Dec 15 14:12:13 2021
+Total cycles: 94, Total bytes: 84
+Total errors: 0, Total warnings: 0

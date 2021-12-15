@@ -1,0 +1,16 @@
+array      1000
+array_len  0010
+bad_r      2030
+count      1030
+divisor    0012
+end        2042
+end_array  1010
+end_index_number_array 1030
+inc        2037
+index      0000
+index_number_array 1020
+loop       200d
+non_zero   00ff
+offset     0020
+orig_zero  00cc
+zero       2029
